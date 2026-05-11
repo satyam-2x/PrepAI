@@ -47,6 +47,10 @@ app.use("/api/profile", profileRoutes);
 
 // --- SERVER ---
 
-app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
+// app.listen(PORT, () => {
+//     console.log(`Server running on ${PORT}`);
+// });
+
+app.get("/", (req, res) => {
+  res.send("Backend Running");
 });
