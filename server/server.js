@@ -27,7 +27,7 @@ app.use(helmet());
 app.use(cors({
     origin: [
         "http://localhost:5173",
-        "https://prepai-production-d146.up.railway.app"
+        "prep-ai-pi-two.vercel.app"
     ],
     credentials: true
 }));
