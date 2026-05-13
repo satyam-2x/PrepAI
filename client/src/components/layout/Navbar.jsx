@@ -5,7 +5,7 @@ function Navbar() {
   const token = localStorage.getItem("token");
 
   return (
-    <nav className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#0b0b0f]">
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#0b0b0f]/80 backdrop-blur-md">
       {/* Logo */}
       <div
         onClick={() => navigate("/")}
