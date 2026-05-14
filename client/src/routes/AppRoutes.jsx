@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 // ---------- Home ----------
 import Home from "../pages/Home";
@@ -99,7 +99,7 @@ function AppRoutes() {
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />
-        
+
       </Routes>
 
       {!hideFooterRoutes.includes(location.pathname) && <Footer />}
