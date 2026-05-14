@@ -18,6 +18,7 @@ import Profile from "../pages/dashboard/Profile";
 import Footer from "../components/layout/Footer";
 import ScrollToTop from "../components/common/ScrollToTop";
 import ProtectedRoute from "../components/common/ProtectedRoute";
+import PublicRoute from "../components/common/PublicRoute";
 
 function AppRoutes() {
   const location = useLocation();
@@ -33,11 +34,50 @@ function AppRoutes() {
         {/* ---------- Public Routes ---------- */}
         <Route path="/" element={<Home />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+  path="/login"
+  element={
+    <PublicRoute>
+      <Login />
+    </PublicRoute>
+  }
+/>
+
+<Route
+  path="/signup"
+  element={
+    <PublicRoute>
+      <Signup />
+    </PublicRoute>
+  }
+/>
+
+<Route
+  path="/forgot-password"
+  element={
+    <PublicRoute>
+      <ForgotPassword />
+    </PublicRoute>
+  }
+/>
+
+<Route
+  path="/reset-password"
+  element={
+    <PublicRoute>
+      <ResetPassword />
+    </PublicRoute>
+  }
+/>
+
+<Route
+  path="/verify-otp"
+  element={
+    <PublicRoute>
+      <VerifyOtp />
+    </PublicRoute>
+  }
+/>
 
         {/* ---------- Protected Routes ---------- */}
         <Route
