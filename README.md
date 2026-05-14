@@ -60,6 +60,19 @@ PrepAI is an AI-powered interview preparation platform that creates personalized
 - Vercel (Frontend Hosting)
 - Railway (Backend Hosting)
 
+---
+
+## 🎥 Platform Overview
+
+### Home Page
+![Home](./screenshots/home.png)
+
+### Interview Questions
+![Questions](./screenshots/questions.png)
+
+### AI Feedback & Score
+![Feedback](./screenshots/feedback.png)
+
 ## ⚙️ Installation
 
 ```bash
