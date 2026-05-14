@@ -97,6 +97,9 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+        
       </Routes>
 
       {!hideFooterRoutes.includes(location.pathname) && <Footer />}
