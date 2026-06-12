@@ -1,0 +1,29 @@
+[33mcommit 31e325dff32a3344e278958e9f3b9b194e06a30e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Satyam kumar Ray <satyamkumarroy216@gmail.com>
+Date:   Sat May 30 09:45:47 2026 +0530
+
+    Add google genai dependency
+
+[33mcommit be0b6c0530d257eb0ad17d89e85e8df78f13a6e3[m
+Author: Satyam kumar Ray <satyamkumarroy216@gmail.com>
+Date:   Sat May 30 09:39:26 2026 +0530
+
+    fix lock file
+
+[33mcommit ce0093b635fc05577e7a777fe1ac91009408cf1f[m
+Author: Satyam kumar Ray <satyamkumarroy216@gmail.com>
+Date:   Sun May 17 19:52:33 2026 +0530
+
+    Update dependencies
+
+[33mcommit b21052f5c015f659ab053725c3ed3bec76aa29a4[m
+Author: Satyam kumar Ray <satyamkumarroy216@gmail.com>
+Date:   Mon May 11 10:32:17 2026 +0530
+
+    Fix lock file
+
+[33mcommit ba249183cd8d3332110079b9bb8aeb0a9c744b7f[m
+Author: Satyam kumar Ray <satyamkumarroy216@gmail.com>
+Date:   Sun May 10 23:32:51 2026 +0530
+
+    Initial commit
