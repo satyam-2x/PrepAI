@@ -13,6 +13,7 @@ function ResetPassword() {
 
   // State management
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState("");
   const [message, setMessage] = useState("");
   const [type, setType] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,12 +36,53 @@ function ResetPassword() {
 
   // Handle input change
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "otp" && !/^\d*$/.test(value)) {
+      return;
+    }
+
+    if (name === "password") {
+      if (value.length < 8) {
+        setPasswordStrength("Weak");
+      } else if (
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/.test(value)
+      ) {
+        setPasswordStrength("Strong");
+      } else {
+        setPasswordStrength("Medium");
+      }
+    }
+
+    setForm({ ...form, [name]: value });
   };
 
+  // Handle reset password
   const handleSubmit = async () => {
     if (!form.otp || !form.newPassword) {
       setMessage("Please fill all fields");
+      setType("error");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(form.otp)) {
+      setMessage("Please enter a valid 6-digit OTP");
+      setType("error");
+      return;
+    }
+
+    if (form.password.length < 8) {
+      setMessage("Password must be at least 8 characters");
+      setType("error");
+      return;
+    }
+
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/.test(form.password)
+    ) {
+      setMessage(
+        "Password must contain uppercase, lowercase, number and symbol"
+      );
       setType("error");
       return;
     }
@@ -57,6 +99,7 @@ function ResetPassword() {
       setTimeout(() => {
         navigate("/login");
       }, 1500);
+
     } catch (error) {
       setMessage(error.response?.data?.message || "Error");
       setType("error");
@@ -75,11 +118,10 @@ function ResetPassword() {
         {message && (
           <div
             className={`mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm
-      ${
-        type === "error"
-          ? "bg-red-500/10 border-red-500/20 text-red-300"
-          : "bg-green-500/10 border-green-500/20 text-green-300"
-      }
+      ${type === "error"
+                ? "bg-red-500/10 border-red-500/20 text-red-300"
+                : "bg-green-500/10 border-green-500/20 text-green-300"
+              }
     `}
           >
             {type === "error" ? (
@@ -92,7 +134,7 @@ function ResetPassword() {
           </div>
         )}
 
-        
+
         <input
           type="email"
           name="email"
@@ -101,17 +143,18 @@ function ResetPassword() {
           className="w-full p-2.5 mb-3 rounded-md bg-white/5 border border-white/10 text-gray-400"
         />
 
-        
+
         <input
           type="text"
           name="otp"
           placeholder="Enter OTP"
+          maxLength={6}
           value={form.otp}
           onChange={handleChange}
           className="w-full p-2.5 mb-3 rounded-md bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-violet-400"
         />
 
-        
+
         <div className="relative mb-4">
           <input
             type={showPassword ? "text" : "password"}
@@ -129,20 +172,31 @@ function ResetPassword() {
           </span>
         </div>
 
-        
+        {passwordStrength && (
+          <p
+            className={`text-xs mt-1 mb-4 ${passwordStrength === "Weak"
+              ? "text-red-400"
+              : passwordStrength === "Medium"
+                ? "text-yellow-400"
+                : "text-green-400"
+              }`}
+          >
+            Password Strength: {passwordStrength}
+          </p>
+        )}
+
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className={`w-full p-2.5 rounded-md font-medium transition ${
-            loading
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-violet-500 hover:bg-violet-400"
-          } text-white`}
+          className={`w-full p-2.5 rounded-md font-medium transition ${loading
+            ? "bg-gray-600 cursor-not-allowed"
+            : "bg-violet-500 hover:bg-violet-400"
+            } text-white`}
         >
           {loading ? "Resetting..." : "Reset Password"}
         </button>
 
-        
+
         <p className="text-sm mt-4 text-center text-gray-400">
           Back to{" "}
           <Link to="/login" className="text-violet-400 hover:underline">

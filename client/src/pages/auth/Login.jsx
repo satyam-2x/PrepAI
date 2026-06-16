@@ -43,6 +43,13 @@ function Login() {
       return;
     }
 
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(form.email)) {
+      setMessage("Please enter a valid email");
+      setType("error");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -58,6 +65,7 @@ function Login() {
       setTimeout(() => {
         navigate("/interview");
       }, 1000);
+
     } catch (error) {
       setMessage(error.response?.data?.message || "Error");
       setType("error");
@@ -76,11 +84,10 @@ function Login() {
         {message && (
           <div
             className={`mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm
-      ${
-        type === "error"
-          ? "bg-red-500/10 border-red-500/20 text-red-300"
-          : "bg-green-500/10 border-green-500/20 text-green-300"
-      }
+      ${type === "error"
+                ? "bg-red-500/10 border-red-500/20 text-red-300"
+                : "bg-green-500/10 border-green-500/20 text-green-300"
+              }
     `}
           >
             {type === "error" ? (
@@ -122,11 +129,10 @@ function Login() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className={`w-full p-2.5 rounded-md font-medium transition ${
-            loading
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-violet-500 hover:bg-violet-400"
-          } text-white`}
+          className={`w-full p-2.5 rounded-md font-medium transition ${loading
+            ? "bg-gray-600 cursor-not-allowed"
+            : "bg-violet-500 hover:bg-violet-400"
+            } text-white`}
         >
           {loading ? "Logging in..." : "Login"}
         </button>

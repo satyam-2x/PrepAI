@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Otp = require("../models/Otp");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/mailer");
@@ -14,43 +15,122 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return res
         .status(400)
-        .json({ message: "Password must be at least 6 characters" });
+        .json({ message: "Password must be at least 8 characters" });
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/.test(password)) {
+      return res.status(400).json({
+        message: "Password must contain uppercase, lowercase, number and symbol"
+      });
     }
 
     const userExists = await User.findOne({
       email: email.toLowerCase().trim(),
     });
-    if (userExists)
+
+    if (userExists) {
       return res.status(400).json({ message: "Email already registered" });
+    }
+
+    const otpRecord = await Otp.findOne({
+      email: email.toLowerCase(),
+      isVerified: true
+    });
+
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Please verify your email first" });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
       name,
       email: email.toLowerCase().trim(),
       password: hashed,
-      otp,
-      otpExpiry: Date.now() + 5 * 60 * 1000,
       credits: 4,
       lastCreditReset: new Date(),
+      isVerified: true
+    });
+
+
+    await Otp.findOneAndDelete({
+      email: email.toLowerCase()
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error during signup" });
+  }
+};
+
+
+// --- SEND OTP ---
+exports.sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const userExists = await User.findOne({
+      email: email.toLowerCase()
+    })
+
+    if (userExists) {
+      return res.status(400).json({ message: "Email is already registered" });
+    }
+
+    const existingOtp = await Otp.findOne({
+      email: email.toLowerCase()
+    });
+
+    if (
+      existingOtp &&
+      Date.now() - existingOtp.createdAt.getTime() < 60 * 1000
+    ) {
+      return res.status(400).json({
+        message: "Please wait 60 seconds before requesting another OTP"
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await Otp.findOneAndDelete({
+      email: email.toLowerCase()
+    });
+
+    await Otp.create({
+      email: email.toLowerCase(),
+      otp,
+      otpExpire: Date.now() + 5 * 60 * 1000
     });
 
     const template = verifyEmailTemplate(otp);
 
-    await sendMail(user.email, template.subject, template.html);
+    await sendMail(
+      email,
+      template.subject,
+      template.html
+    );
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "User registered! OTP sent to email",
+      message: "OTP sent successfully"
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error during signup" });
+    res.status(500).json({
+      message: "Error sending OTP"
+    });
   }
 };
 
@@ -59,19 +139,23 @@ exports.verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!email || !otp) {
+      return res.status(400).json({
+        message: "Email and OTP are required"
+      });
+    }
 
-    if (!user || user.otp !== otp || user.otpExpiry < Date.now()) {
+    const otpRecord = await Otp.findOne({ email: email.toLowerCase() });
+
+    if (!otpRecord || otpRecord.otp !== otp || otpRecord.otpExpire < Date.now()) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpiry = undefined;
-
-    await user.save();
+    otpRecord.isVerified = true;
+    await otpRecord.save();
 
     res.json({ message: "Account verified successfully" });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error verifying OTP" });
@@ -95,13 +179,15 @@ exports.login = async (req, res) => {
 
     if (!user.isVerified) {
       return res
-        .status(401)
+        .status(403)
         .json({ message: "Please verify your account first" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "2d",
-    });
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "2d" }
+    );
 
     res.json({
       success: true,
@@ -112,6 +198,7 @@ exports.login = async (req, res) => {
         email: user.email,
       },
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error during login" });
@@ -127,6 +214,12 @@ exports.logout = (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      });
+    }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
 
@@ -159,8 +252,14 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: "All fields required" });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: "Password too short" });
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/.test(password)) {
+      return res.status(400).json({
+        message: "Password must contain uppercase, lowercase, number and symbol"
+      });
     }
 
     const user = await User.findOne({
@@ -182,6 +281,7 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     res.json({ message: "Password reset successful" });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Reset password error" });

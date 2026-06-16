@@ -21,8 +21,11 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: 6,
-      match: [/(?=.*[!@#$%^&*])/, "Password must contain at least 1 symbol"],
+      minlength: 8,
+      match: [
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/,
+        "Password must contain uppercase, lowercase, number and symbol"
+      ]
     },
 
     // --- PASSWORD RESET ---
@@ -30,8 +33,6 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpires: { type: Date },
 
     // --- EMAIL VERIFICATION ---
-    otp: String,
-    otpExpiry: Date,
     isVerified: {
       type: Boolean,
       default: false,
